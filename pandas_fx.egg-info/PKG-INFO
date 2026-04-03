@@ -1,0 +1,19 @@
+Metadata-Version: 2.4
+Name: pandas-fx
+Version: 0.1.0
+Summary: Finance-oriented pandas DataFrame accessors
+Author-email: Your Name <you@email.com>
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: pandas>=1.5
+
+
+# pandas-fx
+
+A small pandas extension that adds finance-oriented DataFrame methods
+using pandas accessors.
+
+## Installation
+```bash
+pip install pandas-fx
+
