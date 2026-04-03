@@ -5,7 +5,7 @@ class QuantAccessor:
     def __init__(self, pandas_obj):
         self._obj = pandas_obj # the underlying dataframe
 
-    def drawdownpipe(self, colname:str, starting_point:float):
+    def drawdownpipe(self, colname:str, starting_point:float=1000) -> pd.DataFrame:
         """
         Takes a timeseries of asset returns.  
         Computes and returns a Dataframe that contains: 
