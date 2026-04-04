@@ -1,1 +1,1 @@
-from .fx_accessor import QuantAccessor
+from .qx_accessor import QuantAccessor
