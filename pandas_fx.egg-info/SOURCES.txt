@@ -2,6 +2,7 @@ README.md
 pyproject.toml
 pandas_fx/__init__.py
 pandas_fx/qx_accessor.py
+pandas_fx/stats_accessor.py
 pandas_fx.egg-info/PKG-INFO
 pandas_fx.egg-info/SOURCES.txt
 pandas_fx.egg-info/dependency_links.txt

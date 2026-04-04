@@ -13,7 +13,7 @@ class QuantAccessor:
 
         df = self._obj.copy()
 
-        wealth_index_col = returns_col+'_wealth_index'
+        wealth_index_col = '_q_' + returns_col + '_wealth_index'
         df[wealth_index_col] = starting_point * (1 + df[returns_col]).cumprod()
 
         return df
@@ -26,13 +26,13 @@ class QuantAccessor:
 
         df = self._obj.copy()
 
-        wealth_index_col = returns_col+'_wealth_index_drawdown'
+        wealth_index_col = '_q_' + returns_col + '_wealth_index_drawdown'
         df[wealth_index_col] = starting_point * (1 + df[returns_col]).cumprod()
 
-        previous_peaks_col = returns_col+'_previous_peaks'
+        previous_peaks_col = '_q_' + returns_col + '_previous_peaks'
         df[previous_peaks_col] = df[wealth_index_col].cummax()
 
-        drawdowns_col = returns_col+'_drawdowns'
+        drawdowns_col = '_q_' + returns_col+'_drawdowns'
         df[drawdowns_col] = (df[wealth_index_col]-df[previous_peaks_col])/df[previous_peaks_col]
         
         columns_to_drop = [wealth_index_col]
