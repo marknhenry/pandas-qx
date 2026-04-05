@@ -20,3 +20,6 @@ authors = [
 [tool.setuptools.packages.find]
 where = ["."]
 
+[tool.setuptools.package-data]
+"pandas_fx" = ["data/*.csv"]
+
