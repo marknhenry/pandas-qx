@@ -28,3 +28,4 @@ def get_hfi_returns():
     hfi.index = hfi.index.to_period('M')
 
     return hfi
+
