@@ -23,7 +23,7 @@ In pandas
 
 # Work with editable version of package
 ```bash
-pip install .e
+pip install -e .
 ```
 
 # Releasing a New Version to PyPI (`pandas-qx`)
