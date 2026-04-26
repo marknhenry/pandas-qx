@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: pandas-qx
-Version: 0.1.0
+Version: 0.1.1
 Summary: Finance-oriented pandas DataFrame accessors and quant analysis
 Author-email: Mark Henry <marknhenry@live.com>
 Requires-Python: >=3.9
