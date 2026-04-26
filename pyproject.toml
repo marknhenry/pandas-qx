@@ -4,9 +4,9 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pandas-fx"
-version = "0.1.0"
-description = "Finance-oriented pandas DataFrame accessors"
+name = "pandas-qx"
+version = "0.1.1"
+description = "Finance-oriented pandas DataFrame accessors and quant analysis"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
@@ -14,12 +14,12 @@ dependencies = [
 ]
 
 authors = [
-    { name = "Your Name", email = "you@email.com" }
+    { name = "Mark Henry", email = "marknhenry@live.com" }
 ]
 
 [tool.setuptools.packages.find]
 where = ["."]
 
 [tool.setuptools.package-data]
-"pandas_fx" = ["data/*.csv"]
+"pandas_qx" = ["data/*.csv"]
 

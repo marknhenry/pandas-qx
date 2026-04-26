@@ -1,0 +1,13 @@
+README.md
+pyproject.toml
+pandas_qx/__init__.py
+pandas_qx/data_loads.py
+pandas_qx/qx_accessor.py
+pandas_qx/stats_accessor.py
+pandas_qx.egg-info/PKG-INFO
+pandas_qx.egg-info/SOURCES.txt
+pandas_qx.egg-info/dependency_links.txt
+pandas_qx.egg-info/requires.txt
+pandas_qx.egg-info/top_level.txt
+pandas_qx/data/Portfolios_Formed_on_ME_monthly_EW.csv
+pandas_qx/data/edhec-hedgefundindices.csv

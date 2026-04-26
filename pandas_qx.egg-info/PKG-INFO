@@ -1,19 +1,19 @@
 Metadata-Version: 2.4
-Name: pandas-fx
+Name: pandas-qx
 Version: 0.1.0
-Summary: Finance-oriented pandas DataFrame accessors
-Author-email: Your Name <you@email.com>
+Summary: Finance-oriented pandas DataFrame accessors and quant analysis
+Author-email: Mark Henry <marknhenry@live.com>
 Requires-Python: >=3.9
 Description-Content-Type: text/markdown
 Requires-Dist: pandas>=1.5
 
 
-# pandas-fx
+# pandas-qx
 
 A small pandas extension that adds finance-oriented DataFrame methods
 using pandas accessors.
 
 ## Installation
 ```bash
-pip install pandas-fx
+pip install pandas-qx
 
