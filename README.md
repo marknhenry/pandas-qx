@@ -1,10 +1,10 @@
 
-# pandas-fx
+# pandas-qx
 
 A small pandas extension that adds finance-oriented DataFrame methods
 using pandas accessors.
 
 ## Installation
 ```bash
-pip install pandas-fx
+pip install pandas-qx
 
