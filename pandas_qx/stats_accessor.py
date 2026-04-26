@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import scipy.stats
 
 
 @pd.api.extensions.register_dataframe_accessor("stats")
@@ -7,7 +8,7 @@ class StatsAccessor:
     def __init__(self, pandas_obj: pd.DataFrame):
         self._obj = pandas_obj
         
-    def get_moments(self, full: bool = False) -> pd.DataFrame:
+    def get_moments(self, full: bool = False, p_level: float = 0.01) -> pd.DataFrame:
         """
         Compute mean, variance, skewness, kurtosis, and raw/central moments for each numeric column.
         Returns a DataFrame with these statistics.
@@ -40,6 +41,7 @@ class StatsAccessor:
                 "skewness": skew,
                 "kurtosis": kurt,
                 "excess_kurtosis": kurt - 3 if np.isfinite(kurt) else np.nan,
+                "is_normal": scipy.stats.jarque_bera(x)[1] > p_level
             }
 
             if full:
@@ -51,6 +53,15 @@ class StatsAccessor:
             
 
         return pd.DataFrame(out).T
+    
+    # def is_normal(self, r, p_value=0.01):
+    #     """
+    #     Applies the Jacque-Bera test for normality to a Series. Returns True if the null hypothesis of 
+    #     normality is not rejected at the given significance level.
+    #     """
+    #     from scipy.stats import normaltest
+    #     stat, p = jarque_bera(r)
+    #     return p > p_value
 
     # def normalised_mean(
     #     self,
