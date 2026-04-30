@@ -11,3 +11,4 @@ pandas_qx.egg-info/requires.txt
 pandas_qx.egg-info/top_level.txt
 pandas_qx/data/Portfolios_Formed_on_ME_monthly_EW.csv
 pandas_qx/data/edhec-hedgefundindices.csv
+pandas_qx/data/ind30_m_vw_rets.csv

@@ -2,6 +2,17 @@ from importlib.resources import files
 
 import pandas as pd
 
+def get_vw_rets():
+    """
+    Load the Value-Weighted Returns of the CRSP Index
+    """
+
+    data_path = files("pandas_qx").joinpath("data/ind30_m_vw_rets.csv")
+    ind = pd.read_csv(data_path, header=0, index_col=0, parse_dates=True)
+    ind = ind/100
+    # ind.index = ind.index.to_period('M')
+
+    return ind
 
 def get_ffme_returns(select="10"):
     """

@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import scipy.stats
+
 # from scipy.stats import norm
 
 
@@ -8,14 +9,78 @@ import scipy.stats
 class StatsAccessor:
     def __init__(self, pandas_obj: pd.DataFrame):
         self._obj = pandas_obj
-        
-    def get_vars(self, level: float = 5) -> pd.DataFrame:
+
+    def get_returns_volatility(self, filter: str = None) -> pd.DataFrame:
         """
-        Compute the Value At Risk (VaR) using historical, Gaussian, and Cornish-Fisher methods for each numeric column. 
-        Returns a DataFrame with these statistics.
+        Compute return and volatility metrics for a DataFrame of returns.
+        Input needs to be prices.
         """
         df = self._obj.copy()
         
+        periods = self.get_seasonality_period(df)
+        n_periods = df.shape[0]
+        years = n_periods / periods if periods > 0 else np.nan
+
+        cols = []
+        for c in df.select_dtypes(include="number").columns:
+            c_text = str(c)
+            if not c_text.startswith("_q_"):
+                if filter is None or filter in c_text:
+                    cols.append(c)
+        num = df[cols]
+
+        out = {}
+        for col in num.columns:
+            x = num[col].dropna().to_numpy()
+            
+            cumulative_return = (x + 1).prod()
+            annualized_return = cumulative_return ** (1 / years) - 1 if years > 0 else np.nan
+            annualized_volatility = x.std(ddof=0) * np.sqrt(periods) if periods > 0 else np.nan
+
+            col_stats = {
+                "annualizedReturn": annualized_return,
+                "annualizedVolatility": annualized_volatility,
+            }
+            out[col] = col_stats
+
+        return pd.DataFrame(out).T
+
+    def get_seasonality_period(self, data: pd.DataFrame | pd.Series) -> int:
+        """
+        Returns the number of periods per season based on the DataFrame/Series time frequency.
+        """
+        index = data.index
+        freq = index.freq or pd.tseries.frequencies.to_offset(index.inferred_freq)
+
+        if freq is None:
+            raise ValueError("Cannot determine frequency of the index.")
+
+        freq_type = freq.name.upper()
+
+        if freq_type in ("D", "B"):
+            return 7
+        elif freq_type in ("W", "W-SUN", "W-MON"):
+            return 52
+        elif freq_type in ("MS", "M", "ME"):
+            return 12
+        elif freq_type in ("QS", "Q", "QE"):
+            return 4
+        elif freq_type in ("YS", "Y", "YE", "A", "AS"):
+            return 1
+        elif freq_type.startswith("H"):
+            return 24
+        elif freq_type.startswith("T") or freq_type.startswith("MIN"):
+            return 60
+        else:
+            raise ValueError(f"Unsupported frequency: '{freq.name}'")
+
+    def get_vars(self, level: float = 5) -> pd.DataFrame:
+        """
+        Compute the Value At Risk (VaR) using historical, Gaussian, and Cornish-Fisher methods for each numeric column.
+        Returns a DataFrame with these statistics.
+        """
+        df = self._obj.copy()
+
         cols = []
         for c in df.select_dtypes(include="number").columns:
             c_text = str(c)
@@ -27,52 +92,55 @@ class StatsAccessor:
         for col in num.columns:
             x = num[col].dropna().to_numpy()
             x = x[~np.isnan(x)]  # Remove any NaNs that might be present
-            
+
             is_negative = x < 0
             x_neg = x[is_negative]
             semideviation = x_neg.std(ddof=0) if len(x_neg) > 0 else np.nan
-            
+
             # Historical VaR is the negative of the quantile at the given level
             var_historic = -np.percentile(x, level)
-            
+
             # Gaussian VaR is - (mean + z * std) where z is the z-score corresponding to the confidence level
             z = scipy.stats.norm.ppf(level / 100)
             mu = x.mean()
             sigma = x.std(ddof=0)
             var_gaussian = -(mu + z * sigma)
-            
+
             # Cornish-Fisher VaR adjusts the z-score for skewness and kurtosis
             s = scipy.stats.skew(x)
             k = scipy.stats.kurtosis(x)  # excess kurtosis
-            z_cf = (z + (z**2 - 1) * s / 6 + (z**3 - 3*z) * (k-3) / 24 - (2*z**3 - 5*z) * s**2 / 36)
+            z_cf = (
+                z
+                + (z**2 - 1) * s / 6
+                + (z**3 - 3 * z) * (k - 3) / 24
+                - (2 * z**3 - 5 * z) * s**2 / 36
+            )
             var_cornish_fisher = -(mu + z_cf * sigma)
-            
-            # CVaR is the average of 
+
+            # CVaR is the average of
             is_beyond = x <= -var_historic
             cvar_historic = -x[is_beyond].mean() if np.any(is_beyond) else np.nan
-            
+
             col_stats = {
                 "Semi-deviation": semideviation,
                 "VaR Historic": var_historic,
                 "VaR Gaussian": var_gaussian,
-                "VaR Cornish-Fisher": var_cornish_fisher, 
-                "CVaR Historic": cvar_historic
+                "VaR Cornish-Fisher": var_cornish_fisher,
+                "CVaR Historic": cvar_historic,
             }
             out[col] = col_stats
-            
 
         return pd.DataFrame(out).T
-        
+
     def get_moments(self, full: bool = False, p_level: float = 0.01) -> pd.DataFrame:
         """
         Compute mean, variance, skewness, kurtosis, and raw/central moments for each numeric column.
         Returns a DataFrame with these statistics.
         It will check for normaility using the Jarque-Bera test using the given p-value threshold. If full=True, it also includes raw and central moments up to 4th order.
-        # If negative_only=True, it will filter out any non-negative values.  
+        # If negative_only=True, it will filter out any non-negative values.
         """
         df = self._obj.copy()
-        
-        
+
         cols = []
         for c in df.select_dtypes(include="number").columns:
             c_text = str(c)
@@ -84,27 +152,27 @@ class StatsAccessor:
         for col in num.columns:
             x = num[col].dropna().to_numpy()
             x = x[~np.isnan(x)]  # Remove any NaNs that might be present
-            
+
             mu = x.mean()
             sigma = x.std(ddof=0)
 
             raw = {k: np.mean(x**k) for k in range(1, 5)}
-            cen = {k: np.mean((x - mu)**k) for k in range(1, 5)}
+            cen = {k: np.mean((x - mu) ** k) for k in range(1, 5)}
             skew = cen[3] / (sigma**3) if sigma != 0 else np.nan
             kurt = cen[4] / (sigma**4) if sigma != 0 else np.nan
-            
+
             # x_neg = x[x < 0]
             # semideviation = np.sqrt(np.mean((x_neg - x_neg.mean())**2)) if len(x_neg) > 0 else np.nan
 
             col_stats = {
                 "mean": mu,
-                "var": cen[2],                 # ddof=0 variance
+                "var": cen[2],  # ddof=0 variance
                 "standard_deviation": sigma / np.sqrt(len(x)) if len(x) > 0 else np.nan,
                 # "semideviation": semideviation,
                 "skewness": skew,
                 "kurtosis": kurt,
                 "excess_kurtosis": kurt - 3 if np.isfinite(kurt) else np.nan,
-                "is_normal": scipy.stats.jarque_bera(x)[1] > p_level
+                "is_normal": scipy.stats.jarque_bera(x)[1] > p_level,
             }
 
             if full:
@@ -113,17 +181,16 @@ class StatsAccessor:
                     col_stats[f"m{k}_central"] = cen[k]
 
             out[col] = col_stats
-            
 
         return pd.DataFrame(out).T
-    
+
     # def get_vars(self, full: bool = False, p_level: float = 0.01) -> pd.DataFrame:
     #     """
-        
+
     #     """
-        
+
     #     return;
-    
+
     # def var_historic(r, level=5):
     #     """
     #     Compute the historical Value at Risk (VaR) at the given confidence level.
@@ -134,9 +201,9 @@ class StatsAccessor:
     #         return r.aggregate(var_historic, level=level)
     #     elif isinstance(r, pd.Series):
     #         return -np.percentile(r, level)
-    #     else: 
+    #     else:
     #         raise TypeError("Input must be a pandas Series or DataFrame.")
-    
+
     # def var_gaussian(r, level=5):
     #     """
     #     Compute the Gaussian (parametric) Value at Risk (VaR) at the given confidence level.
@@ -150,17 +217,16 @@ class StatsAccessor:
     #         sigma = r.std(ddof=0)
     #         z = scipy.stats.norm.ppf(level / 100)
     #         return -(mu + z * sigma)
-    #     else: 
+    #     else:
     #         raise TypeError("Input must be a pandas Series or DataFrame.")
-    
-    
+
     # def is_normal(self, r, p_value=0.01):
     #     """
-    #     Applies the Jacque-Bera test for normality to a Series. Returns True if the null hypothesis of 
+    #     Applies the Jacque-Bera test for normality to a Series. Returns True if the null hypothesis of
     #     normality is not rejected at the given significance level.
     #     """
     #     from scipy.stats import normaltest
-    #     stat, p = jarque_bera(r) 
+    #     stat, p = jarque_bera(r)
     #     return p > p_value
 
     # def normalised_mean(
