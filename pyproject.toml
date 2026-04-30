@@ -13,6 +13,14 @@ dependencies = [
     "pandas>=1.5"
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
 authors = [
     { name = "Mark Henry", email = "marknhenry@live.com" }
 ]
